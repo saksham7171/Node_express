@@ -37,6 +37,19 @@ app.get('/todo/:id',function(request,response){
 	matchedTodo ? response.json(matchedTodo) : response.status(404).send();
 });
 
+app.delete('/todo/:id',function(request,response){
+	var todoId = parseInt(request.params.id);
+	var matchedTodo = _.findWhere(todos,{id : todoId});
+
+	if(!matchedTodo){
+		response.status(404).json({"error":"no error with id"});
+	}
+	else{
+		todos = _.without(todos,matchedTodo);
+		response.json(matchedTodo);
+	}
+});
+
 app.get('/about', function(request, response){
 	response.send('about us');
 });
