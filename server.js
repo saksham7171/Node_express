@@ -1,37 +1,38 @@
 var express = require('express');
 var app = express();
 var PORT = process.env.PORT || 3000;
+var bodyParser = require('body-parser');
+var _ = require('underscore');
 
 /*var middleware = require("./middleware.js");
 app.use(middleware.logger);*/
 
-var todos=[{
-	id:1,
-	description: 'Todo 1',
-	completed:false
-}, {
-	id:2,
-	description: 'Todo 2',
-	completed:false
-}, {
-	id:3,
-	description: 'Todo 3',
-	completed:true
-}];
+app.use(bodyParser.json());
+
+var todos = [];
+var todoNextId = 1;
 
 app.get('/todos',function(request,response){
 	response.json(todos);
 });
 
+app.post('/todos',function(request,response){
+	var body = _.pick(request.body,'description','completed');
+
+	if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0){
+		response.status(400).send();
+	}
+	else{
+		body.description = body.description.trim();
+		body.id = todoNextId++;
+		todos.push(body);
+		response.json(todos);
+	}
+});
+
 app.get('/todo/:id',function(request,response){
 	var todoId = parseInt(request.params.id);
-	var matchedTodo;
-
-	todos.forEach(function(todo){
-		if(todoId === todo.id){
-			matchedTodo=todo;
-		}
-	});
+	var matchedTodo = _.findWhere(todos,{id : todoId});
 
 	matchedTodo ? response.json(matchedTodo) : response.status(404).send();
 });
